@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Donut ASCII Arcade</title>
+<style>
+  body { margin: 0; background: black; overflow: hidden; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+// ================= STATE =================
+let A = 0, B = 0;
+let px = canvas.width / 2;
+let py = canvas.height / 2;
+let vx = 0, vy = 0;
+
+let scale = 90;
+
+// física dopamina
+let friction = 0.995;
+let bounce = 0.9;
+let boost = 1.15;
+let maxSpeed = 40;
+
+// gameplay
+let score = 0;
+let combo = 0;
+let comboTimer = 0;
+
+// efectos
+let shake = 0;
+let particles = [];
+
+// ASCII
+const chars = ".,-~:;=!*#$@";
+
+// input
+let dragging = false;
+let lastX = 0, lastY = 0;
+
+canvas.addEventListener("mousedown", e => {
+  dragging = true;
+  lastX = e.clientX;
+  lastY = e.clientY;
+});
+
+canvas.addEventListener("mouseup", () => dragging = false);
+
+canvas.addEventListener("mousemove", e => {
+  if (dragging) {
+    vx += (e.clientX - lastX) * 0.3;
+    vy += (e.clientY - lastY) * 0.3;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  }
+});
+
+// ================= PARTICLES =================
+function spawnParticles(x, y, force) {
+  for (let i = 0; i < force; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.5) * 8,
+      life: 40
+    });
+  }
+}
+
+// ================= LOOP =================
+function loop(time = 0) {
+
+  // TRAIL (clave dopamina)
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // física
+  if (!dragging) {
+    px += vx;
+    py += vy;
+  }
+
+  vx *= friction;
+  vy *= friction;
+
+  let speed = Math.hypot(vx, vy);
+  if (speed > maxSpeed) {
+    vx = vx / speed * maxSpeed;
+    vy = vy / speed * maxSpeed;
+  }
+
+  // colisiones
+  let hit = false;
+
+  if (px - scale < 0 || px + scale > canvas.width) {
+    vx *= -bounce * boost;
+    hit = true;
+  }
+
+  if (py - scale < 0 || py + scale > canvas.height) {
+    vy *= -bounce * boost;
+    hit = true;
+  }
+
+  px = Math.max(scale, Math.min(canvas.width - scale, px));
+  py = Math.max(scale, Math.min(canvas.height - scale, py));
+
+  if (hit) {
+    let force = Math.hypot(vx, vy);
+
+    combo++;
+    comboTimer = 60;
+
+    score += Math.floor(force * (1 + combo * 0.3));
+
+    shake = force;
+    spawnParticles(px, py, force * 0.5);
+  }
+
+  if (comboTimer > 0) comboTimer--;
+  else combo = 0;
+
+  // ================= RENDER =================
+  ctx.save();
+
+  // shake
+  ctx.translate(
+    (Math.random() - 0.5) * shake,
+    (Math.random() - 0.5) * shake
+  );
+
+  ctx.fillStyle = "white";
+  ctx.font = "12px monospace";
+
+  let zbuffer = [];
+
+  for (let i = 0; i < 6.28; i += 0.25) {
+    for (let j = 0; j < 6.28; j += 0.07) {
+
+      let c = Math.sin(i);
+      let d = Math.cos(j);
+      let e = Math.sin(A);
+      let f = Math.sin(j);
+      let g = Math.cos(A);
+      let h = d + 2;
+      let D = 1 / (c * h * e + f * g + 5);
+      let l = Math.cos(i);
+      let m = Math.cos(B);
+      let n = Math.sin(B);
+
+      let t = c * h * g - f * e;
+
+      let x = Math.floor(px + scale * D * (l * h * m - t * n));
+      let y = Math.floor(py + scale * D * (l * h * n + t * m));
+
+      let idx = x + y * canvas.width;
+
+      if (zbuffer[idx] == null || zbuffer[idx] < D) {
+        zbuffer[idx] = D;
+
+        let lum = Math.max(0, (l * m - t * n));
+        let char = chars[Math.floor(lum * (chars.length - 1))];
+
+        ctx.fillText(char, x, y);
+      }
+    }
+  }
+
+  // partículas
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(p.x, p.y, 2, 2);
+  });
+
+  particles = particles.filter(p => p.life > 0);
+
+  // HUD
+  ctx.fillStyle = "white";
+  ctx.fillText("Score: " + score, 20, 30);
+  ctx.fillText("Combo: " + combo, 20, 50);
+
+  ctx.restore();
+
+  // rotación ligada a velocidad (clave)
+  A += 0.04 + vx * 0.003;
+  B += 0.02 + vy * 0.003;
+
+  shake *= 0.9;
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
