@@ -1,1 +1,114 @@
+<table>
+  <tr>
+    <td>
+      <h1>Neuroglaze</h1>
+      <p><strong>Experiencia interactiva, render ASCII y audio reactivo.</strong></p>
+      <p>El sistema combina visuales llamativos, progresión roguelite y eventos de combate estructurados alrededor de un modelo de "estado de trance". El objetivo no es únicamente la supervivencia del jugador, sino la gestión de un sistema dinámico de estabilidad que afecta directamente la simulación visual y sonora.</p>
+    </td>
+    <td><img src="./donnut_js_v1.0.0/assets%20readme/jajalol.gif" alt="Trance Donut System" width="120"></td>
+  </tr>
+</table>
 
+## Arquitectura del sistema
+El proyecto está dividido en módulos independientes me gustaria poder ofrecer libertad a la hora de importar modelos y modificar el juego:
+- El diseño es intencionalmente modular para permitir escalabilidad sin acoplamiento fuerte.
+## Loop principal de juego
+El ciclo de juego se define como:
+
+1. Movimiento físico del objeto principal les recordara un poco a las estrellas de mario galaxy
+2. Generación de velocidad y rebotes
+3. Conversión de rendimiento en estabilidad y experiencia
+4. Generación de eventos (cajas, enemigos, bosses)
+5. Modificación del estado audiovisual
+6. Incremento progresivo de dificultad
+
+El sistema no tiene un estado de “victoria tradicional”, sino un crecimiento continuo de complejidad.
+
+## Sistema de progresión
+El jugador progresa mediante experiencia (EXP).
+
+Cada nivel incrementa:
+
+- velocidad base del sistema
+- presión global ranking
+- frecuencia de eventos hostiles
+- calidad de recompensas
+- vida de enemigos 
+
+La progresión no está diseñada para estabilizar el sistema, sino para intensificarlo.
+
+## Sistema de recompensas
+Se implementa un sistema de cajas (loot) basado en probabilidad.
+
+Tipos de cajas:
+- tradicional
+- Gran recompensa 
+- caja imperial
+
+Las recompensas pueden modificar directamente la física, el audio o la lógica de juego, cada caja contiene dif contenido q solo puede ser canjeado una vez.
+
+## Sistema de enemigos
+Los enemigos son entidades de presión sistémica, no unidades de combate tradicionales.
+
+Tipos:
+
+- `DRIFTER`: entidad de empuje pasivo
+- `STATIC NODE`: zonas de interferencia estática
+- `HUNTER`: entidad de persecución dinámica
+
+Su función es alterar el control del jugador y aumentar la inestabilidad del sistema.
+
+## Sistema de bosses
+Los bosses representan eventos de caos total.
+
+Un boss altera globalmente:
+
+- comportamiento del audio
+- frecuencia de eventos
+- presión del sistema
+- el propio gameplay se ve afectado dependiendo del boss cada boss presenta dif mecanicas haciendo cada encuentro una experiencia unica 
+
+Durante un combate de boss se activa un sistema de resolución basado en dados.
+
+## Sistema de dados (combate)
+Durante eventos de boss, se ejecuta un lanzamiento de dado (1–20) en intervalos definidos.
+
+El resultado determina modificadores temporales:
+
+- 1–4: debuff severo
+- 5–9: estado neutro
+- 10–14: buff moderado
+- 15–17: buff alto
+- 18–20: sobredooosiiii
+
+Este sistema introduce variabilidad controlada dentro del combate.
+
+## 10. Sistema audiovisual
+El sistema de audio es completamente reactivo y depende de las variables del sistema:
+
+- `speed` afecta ganancia y tempo
+- `stability` afecta filtrado y claridad
+- `pressure` incrementa distorsión
+- `combo` afecta apertura del filtro
+
+El audio no es lineal ni precompuesto, sino generativo.
+
+El render ASCII responde a los mismos parámetros mediante densidad, ruido y distorsión.
+
+## Sistema de estado visual
+El sistema visual responde a estados globales:
+
+- `calm`: baja distorsión, estabilidad alta
+- `active`: comportamiento estándar del sistema
+- `overload`: alta distorsión visual y sonora
+- `boss`: estado de interferencia global
+
+## Extensibilidad
+El sistema está diseñado para permitir expansión en:
+
+- sistemas de skins custom
+- nuevas entidades de enemigos
+- eventos de boss más complejos
+- integración de estados persistentes
+- expansión del sistema de audio reactivo
+- personalizacion total importante x tipo de archivos
